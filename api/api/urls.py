@@ -21,6 +21,8 @@ from photo_app import views
 
 router = routers.DefaultRouter()
 router.register(r'posts', views.PostViewSet)
+router.register(r'users', views.CreateUserViewSet)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

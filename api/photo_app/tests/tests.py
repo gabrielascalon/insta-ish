@@ -73,3 +73,10 @@ class PostTestCase(TestCase):
             url, data, content_type='application/json')
         post = post.refresh_from_db()
         self.assertEqual(post.published_date, post_published_date)
+
+
+class UserTestCase(TestCase):
+    def test_create_new_user(self):
+        data = {'username': 'test_username',
+                'email': 'test@test.com', 'password': 'test123'}
+        response = self.client.post('/users/', data, format='application/json')
