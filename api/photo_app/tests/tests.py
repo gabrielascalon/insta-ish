@@ -4,6 +4,7 @@ from django.core.files.base import ContentFile
 from .factories import PostFactory
 from django.urls import reverse
 from photo_app.models import Post
+from django.contrib.auth.models import User
 
 
 class PostTestCase(TestCase):
@@ -79,4 +80,6 @@ class UserTestCase(TestCase):
     def test_create_new_user(self):
         data = {'username': 'test_username',
                 'email': 'test@test.com', 'password': 'test123'}
-        response = self.client.post('/users/', data, format='application/json')
+        self.client.post('/users/', data, format='application/json')
+        self.assertTrue(User.objects.filter(
+            username=data['username']).exists())
