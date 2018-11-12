@@ -18,6 +18,8 @@ from django.urls import path
 from django.conf.urls import url, include
 from rest_framework import routers
 from photo_app import views
+from rest_framework.authtoken.views import obtain_auth_token
+
 
 router = routers.DefaultRouter()
 router.register(r'posts', views.PostViewSet)
@@ -27,4 +29,4 @@ router.register(r'users', views.CreateUserViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^', include(router.urls)),
-]
+    url(r'^api-token-auth/', obtain_auth_token), ]
