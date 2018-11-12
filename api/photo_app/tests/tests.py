@@ -16,7 +16,7 @@ class PostTestCase(TestCase):
         self.description = 'This is a test post for my Post tests'
         self.user = UserFactory()
         self.token = Token.objects.create(user=self.user)
-        self.header = {
+        self.auth = {
             'HTTP_AUTHORIZATION': 'Token {}'.format(self.token.key)}
 
     def test_get_all_posts(self):
@@ -112,4 +112,3 @@ class UserTestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 400)
         self.assertFalse(user.auth_token.key in response_json)
-        print(user.get_username())
