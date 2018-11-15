@@ -10,6 +10,9 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
+    def get_serializer_context(self):
+        return {'request': self.request}
+
 
 class CreateUserViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)

@@ -5,7 +5,8 @@ from rest_framework.authtoken.models import Token
 
 
 class Post(models.Model):
-    # user = models.ForeignKey('auth.User', models.on_delete=CASCADE)
+    user = models.ForeignKey('photo_app.CustomUser',
+                             on_delete=models.CASCADE)
     image = models.ImageField(upload_to='static/photos/')
     description = models.TextField(blank=True)
     published_date = models.DateTimeField(auto_now_add=True)

@@ -14,12 +14,12 @@ class PostTestCase(TestCase):
             b"GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;", name='image.gif')
         self.description = 'This is a test post for my Post tests'
         self.user = UserFactory()
-        self.header = {
+        self.auth = {
             'HTTP_AUTHORIZATION': 'Token {}'.format(self.user.auth_token.key)}
 
     def test_get_all_posts(self):
         PostFactory.create_batch(2)
-        response = self.client.get('/posts/', **self.header)
+        response = self.client.get('/posts/', **self.auth)
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response_json), 2)
@@ -27,7 +27,7 @@ class PostTestCase(TestCase):
     def test_get_post(self):
         post = PostFactory()
         url = '/posts/{}/'.format(post.pk)
-        response = self.client.get(url, **self.header)
+        response = self.client.get(url, **self.auth)
         response_json = response.json()
         self.assertIn(post.image.url, response_json['image'])
         self.assertEqual(post.description, response_json['description'])
@@ -37,26 +37,30 @@ class PostTestCase(TestCase):
     def test_create_new_post(self):
         data = {'image': self.image, 'description': self.description}
         response = self.client.post(
-            '/posts/', data, format='multipart', **self.header)
+            '/posts/', data, format='multipart', **self.auth)
         self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+        response_id = response_json['id']
+        post = Post.objects.get(id=response_id)
+        self.assertEqual(self.user.username, post.user.username)
 
     def test_no_description(self):
         data = {'image': self.image}
         response = self.client.post(
-            '/posts/', data, format='multipart', **self.header)
+            '/posts/', data, format='multipart', **self.auth)
         self.assertEqual(response.status_code, 201)
 
     def test_no_image(self):
         data = {'description': self.description}
         response = self.client.post(
-            '/posts/', data, format='multipart', **self.header)
+            '/posts/', data, format='multipart', **self.auth)
         self.assertEqual(response.status_code, 400)
 
     def test_delete_post(self):
         post = PostFactory()
         pk = post.pk
         url = '/posts/{}/'.format(pk)
-        response = self.client.delete(url, **self.header)
+        response = self.client.delete(url, **self.auth)
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Post.objects.filter(pk=pk).exists())
 
@@ -66,7 +70,7 @@ class PostTestCase(TestCase):
         url = '/posts/{}/'.format(pk)
         data = json.dumps({'description': self.description})
         response = self.client.patch(
-            url, data, content_type='application/json', **self.header)
+            url, data, content_type='application/json', **self.auth)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.description in str(response.content))
 
@@ -77,7 +81,7 @@ class PostTestCase(TestCase):
         url = '/posts/{}/'.format(pk)
         data = json.dumps({'published_date': '1995-11-02T10:49:03.916596Z'})
         response = self.client.patch(
-            url, data, content_type='application/json', **self.header)
+            url, data, content_type='application/json', **self.auth)
         post = post.refresh_from_db()
         self.assertEqual(post.published_date, post_published_date)
 
