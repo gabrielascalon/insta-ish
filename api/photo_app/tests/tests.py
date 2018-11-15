@@ -3,8 +3,7 @@ import json
 from django.core.files.base import ContentFile
 from .factories import PostFactory, UserFactory
 from django.urls import reverse
-from photo_app.models import Post
-from django.contrib.auth.models import User
+from photo_app.models import Post, CustomUser
 from rest_framework.authtoken.models import Token
 
 
@@ -15,9 +14,8 @@ class PostTestCase(TestCase):
             b"GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;", name='image.gif')
         self.description = 'This is a test post for my Post tests'
         self.user = UserFactory()
-        self.token = Token.objects.create(user=self.user)
         self.auth = {
-            'HTTP_AUTHORIZATION': 'Token {}'.format(self.token.key)}
+            'HTTP_AUTHORIZATION': 'Token {}'.format(self.user.auth_token.key)}
 
     def test_get_all_posts(self):
         PostFactory.create_batch(2)
@@ -41,6 +39,10 @@ class PostTestCase(TestCase):
         response = self.client.post(
             '/posts/', data, format='multipart', **self.auth)
         self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+        response_id = response_json['id']
+        post = Post.objects.get(id=response_id)
+        self.assertEqual(self.user.username, post.user.username)
 
     def test_no_description(self):
         data = {'image': self.image}
@@ -89,10 +91,20 @@ class UserTestCase(TestCase):
         data = {'username': 'test_username',
                 'email': 'test@test.com', 'password': 'test123'}
         self.client.post('/users/', data, format='application/json')
-        self.assertTrue(User.objects.filter(
+        self.assertTrue(CustomUser.objects.filter(
             username=data['username']).exists())
-        user = User.objects.get(username=data['username'])
+        user = CustomUser.objects.get(username=data['username'])
         self.assertTrue(Token.objects.filter(user=user).exists())
+
+    def test_update_user(self):
+        user = UserFactory()
+        user_id = user.pk
+        new_username = 'test username'
+        user = CustomUser.objects.get(id=user.pk)
+        user.username = new_username
+        user.save()
+        user.refresh_from_db()
+        self.assertEqual(new_username, user.username)
 
     def test_login_valid_credentials(self):
         password = 'validpass'
@@ -106,7 +118,6 @@ class UserTestCase(TestCase):
     def test_login_invalid_credentials(self):
         password = 'validpass'
         user = UserFactory(password=password)
-        Token.objects.create(user=user)
         response = self.client.post(
             '/api-token-auth/', {'username': user.username, 'password': 'invalidpass'})
         response_json = response.json()

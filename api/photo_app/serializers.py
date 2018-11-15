@@ -1,23 +1,27 @@
 from rest_framework import serializers
-from .models import Post
-from django.contrib.auth.models import User
+from .models import Post, CustomUser
 from rest_framework.authtoken.models import Token
 
 
 class PostSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.ReadOnlyField()
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
     class Meta:
         model = Post
-        fields = ('image', 'description', 'published_date')
+        fields = ('id', 'user', 'image', 'description', 'published_date')
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('username', 'email', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'password')
+        extra_kwargs = {'password': {'write_only': True},
+                        'id': {'read_only': True}}
 
     def create(self, validated_data):
-        user = User.objects.create_user(validated_data['username'], validated_data['email'],
-                                        validated_data['password'])
-        Token.objects.create(user=user)
+        user = CustomUser.objects.create_user(validated_data['username'], validated_data['email'],
+                                              validated_data['password'])
         return user
