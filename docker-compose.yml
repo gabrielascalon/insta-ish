@@ -1,0 +1,7 @@
+version: '3'
+services:
+  photo_app:
+    build: .
+    command: bash -c 'python3 api/manage.py migrate --noinput && python3 api/manage.py runserver 0.0.0.0:8000'
+    ports:
+     - '8000:8000'
