@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
+    queryset = Post.objects.get(user=self.request.user)
     serializer_class = PostSerializer
 
     def get_serializer_context(self):
