@@ -2,7 +2,7 @@ version: '3'
 services:
   photo_app:
     build: .
-    command: bash -c './wait-for db:5432 -- python3 api/manage.py migrate --noinput && python3 api/manage.py runserver 0.0.0.0:8000'
+    command: bash -c './wait-for db:5432 -- sleep 2 && python3 api/manage.py migrate --noinput && python3 api/manage.py runserver 0.0.0.0:8000'
     ports:
      - '8000:8000'
     depends_on:
