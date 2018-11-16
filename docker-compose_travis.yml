@@ -2,7 +2,7 @@ version: '3'
 services:
   photo_app:
     build: .
-    command: bash -c 'sleep 15 && python3 api/manage.py migrate --noinput && python3 api/manage.py test'
+    command: bash -c 'sleep 15 && python3 api/manage.py migrate --noinput && cd api && python3 manage.py test'
      - '8000:8000'
     depends_on:
       - db
