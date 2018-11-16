@@ -5,3 +5,18 @@ services:
     command: bash -c 'python3 api/manage.py migrate --noinput && python3 api/manage.py runserver 0.0.0.0:8000'
     ports:
      - '8000:8000'
+    depends_on:
+      - db
+    volumes:
+      - .:/code
+  db:
+    image: "postgres:latest"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'gabrielascalon'
+      POSTGRES_PASSWORD: 'teste123'
+      POSTGRES_DB: 'instaish'
+
+volumes:
+  db-data:
