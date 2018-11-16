@@ -18,4 +18,4 @@ install:
   - docker-compose -f docker-compose_travis.yml build
 
 script:
-  - docker-compose -f docker-compose_travis.yml run
+  - docker-compose -f docker-compose_travis.yml up --abort-on-container-exit
