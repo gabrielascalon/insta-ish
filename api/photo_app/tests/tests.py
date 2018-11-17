@@ -57,15 +57,26 @@ class PostTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_delete_post(self):
-        post = PostFactory()
+        post = PostFactory(user=self.user)
         pk = post.pk
         url = '/posts/{}/'.format(pk)
         response = self.client.delete(url, **self.auth)
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Post.objects.filter(pk=pk).exists())
 
+    def test_delete_post_other_user(self):
+        post = PostFactory(user=self.user)
+        other_user = UserFactory()
+        other_user_auth = {
+            'HTTP_AUTHORIZATION': 'Token {}'.format(other_user.auth_token.key)}
+        pk = post.pk
+        url = '/posts/{}/'.format(pk)
+        response = self.client.delete(url, **other_user_auth)
+        self.assertEqual(response.status_code, 401)
+        self.assertTrue(Post.objects.filter(pk=pk).exists())
+
     def test_edit_post(self):
-        post = PostFactory()
+        post = PostFactory(user=self.user)
         pk = post.pk
         url = '/posts/{}/'.format(pk)
         data = json.dumps({'description': self.description})
@@ -74,8 +85,22 @@ class PostTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.description in str(response.content))
 
-    def edit_published_date(self):
+    def test_edit_post_other_user(self):
         post = PostFactory()
+        pk = post.pk
+        other_user = UserFactory()
+        other_user_auth = {
+            'HTTP_AUTHORIZATION': 'Token {}'.format(other_user.auth_token.key)}
+        url = '/posts/{}/'.format(pk)
+        data = json.dumps({'description': self.description})
+        response = self.client.patch(
+            url, data, content_type='application/json', **other_user_auth)
+        self.assertFalse(self.description in str(response.content))
+        self.assertFalse(post.user == other_user)
+        self.assertEqual(response.status_code, 401)
+
+    def edit_published_date(self):
+        post = PostFactory(user=self.user)
         pk = post.pk
         post_published_date = post.published_date
         url = '/posts/{}/'.format(pk)
@@ -84,6 +109,15 @@ class PostTestCase(TestCase):
             url, data, content_type='application/json', **self.auth)
         post = post.refresh_from_db()
         self.assertEqual(post.published_date, post_published_date)
+
+    def test_substitute_post(self):
+        post = PostFactory(user=self.user)
+        pk = post.pk
+        url = '/posts/{}/'.format(pk)
+        data = json.dumps({'description': self.description})
+        response = self.client.put(
+            url, data, content_type='application/json', **self.auth)
+        self.assertEqual(response.status_code, 405)
 
 
 class UserTestCase(TestCase):
