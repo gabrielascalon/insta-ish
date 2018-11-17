@@ -1,0 +1,22 @@
+version: '3'
+services:
+  photo_app:
+    build: .
+    # Added sleep to make sure that the application would start only after the db finished building
+    command: bash -c 'sleep 15 && cd api && python3 manage.py test'
+     - '8000:8000'
+    depends_on:
+      - db
+    volumes:
+      - .:/code
+  db:
+    image: "postgres:latest"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'gabrielascalon'
+      POSTGRES_PASSWORD: 'teste123'
+      POSTGRES_DB: 'instaish'
+
+volumes:
+  db-data:
