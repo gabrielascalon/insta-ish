@@ -12,9 +12,10 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  - ls -la api
 
 script:
   - docker-compose -f docker-compose_travis.yml up --exit-code-from photo_app
 
 after_success:
-  - pip install codecov && cd api && codecov
+  - pip install codecov && cd api && codecov && ls -la
