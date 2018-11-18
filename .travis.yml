@@ -16,7 +16,7 @@ before_script:
   - docker-compose -f docker-compose_travis.yml build
 
 script:
-  - docker-compose -f docker-compose_travis.yml run --rm $(bash <(curl -s https://codecov.io/env)) -c 'cd api && coverage run ./manage.py test && codecov'
+  - docker-compose -f docker-compose_travis.yml run photo_app --rm $(bash <(curl -s https://codecov.io/env)) -c 'cd api && coverage run ./manage.py test && codecov'
 
 
 after_success:
