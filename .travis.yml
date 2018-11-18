@@ -18,4 +18,4 @@ script:
   - docker-compose -f docker-compose_travis.yml up --exit-code-from photo_app
 
 after_success:
-  - pip install codecov && cd api && codecov && ls -la
+  - pip install codecov && cd api && codecov && ls -la && cat coverage.xml
