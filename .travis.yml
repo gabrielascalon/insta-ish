@@ -6,6 +6,7 @@ services:
   - docker
 env:
   - DOCKER_COMPOSE_VERSION=1.15.0
+  - CODECOV_REPO_TOKEN=2c2085ff-347a-4dda-8c31-e8c09ca7e01e
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
@@ -18,3 +19,7 @@ install:
 
 script:
   - docker-compose -f docker-compose_travis.yml up --exit-code-from photo_app
+
+after_success:
+  - coverage report
+  - codecov -t ${CODECOV_REPO_TOKEN}
