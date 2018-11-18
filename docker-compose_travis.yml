@@ -1,5 +1,6 @@
 version: '3'
 services:
+  -docker
   photo_app:
     build: .
     # Added sleep to make sure that the application would start only after the db finished building
