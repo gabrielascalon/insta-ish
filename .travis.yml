@@ -20,4 +20,4 @@ script:
 
 
 after_success:
-  - pip install codecov && cd api && codecov
+  - pip install codecov && cd api && codecov && ls -la && cat coverage.xml
