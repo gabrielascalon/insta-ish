@@ -10,3 +10,4 @@ python-dateutil==2.7.5
 pytz==2018.6
 six==1.11.0
 text-unidecode==1.2
+codecov
