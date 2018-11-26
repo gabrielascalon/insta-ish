@@ -1,9 +1,9 @@
 from django.test import TestCase
 import json
 from django.core.files.base import ContentFile
-from .factories import PostFactory, UserFactory
+from .factories import PostFactory, UserFactory, CommentFactory, LikeFactory
 from django.urls import reverse
-from photo_app.models import Post, CustomUser
+from photo_app.models import Post, CustomUser, Like, Comment
 from rest_framework.authtoken.models import Token
 
 
@@ -118,6 +118,97 @@ class PostTestCase(TestCase):
         response = self.client.put(
             url, data, content_type='application/json', **self.auth)
         self.assertEqual(response.status_code, 405)
+
+
+class LikeTestCase(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.auth = {'HTTP_AUTHORIZATION': 'Token {}'.format(
+            self.user.auth_token.key)}
+
+    def test_like_post(self):
+        post = PostFactory()
+        url = '/posts/{}/likes/'.format(post.pk)
+        response = self.client.post(url, **self.auth)
+        post = Post.objects.get(pk=post.pk)
+        self.assertTrue(Like.objects.filter(
+            user=self.user, post=post).exists())
+        self.assertEqual(response.status_code, 201)
+
+    def test_user_like_post_twice(self):
+        post = PostFactory()
+        Like.objects.create(user=self.user, post=post)
+        url = '/posts/{}/likes/'.format(post.pk)
+        response = self.client.post(url, **self.auth)
+        post = Post.objects.get(pk=post.pk)
+        self.assertTrue(Like.objects.filter(
+            user=self.user, post=post).exists())
+        self.assertEqual(response.status_code, 400)
+
+    def test_delete_like(self):
+        post = PostFactory()
+        like = LikeFactory(user=self.user, post=post)
+        url = '/posts/{}/likes/{}/'.format(post.pk, like.pk)
+        response = self.client.delete(url, **self.auth)
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Like.objects.filter(pk=like.pk).exists())
+
+    def test_delete_like_other_user(self):
+        post = PostFactory()
+        like = LikeFactory(user=self.user, post=post)
+        other_user = UserFactory()
+        other_user_auth = {
+            'HTTP_AUTHORIZATION': 'Token {}'.format(other_user.auth_token.key)}
+        url = '/posts/{}/likes/{}/'.format(post.pk, like.pk)
+        response = self.client.delete(url, **other_user_auth)
+        self.assertEqual(response.status_code, 401)
+        self.assertTrue(Like.objects.filter(pk=like.pk).exists())
+
+
+class CommentTestCase(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.auth = {'HTTP_AUTHORIZATION': 'Token {}'.format(
+            self.user.auth_token.key)}
+
+    def test_comment_on_post(self):
+        post = PostFactory()
+        url = '/posts/{}/comments/'.format(post.pk)
+        response = self.client.post(url, **self.auth)
+        self.assertTrue(Comment.objects.filter(
+            user=self.user, post=post).exists())
+        self.assertEqual(response.status_code, 201)
+
+    def test_delete_comment(self):
+        post = PostFactory()
+        comment = CommentFactory(user=self.user, post=post)
+        url = '/posts/{}/comments/{}/'.format(post.pk, comment.pk)
+        response = self.client.delete(url, **self.auth)
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Comment.objects.filter(pk=comment.pk).exists())
+
+    def test_delete_comment_other_user(self):
+        post = PostFactory()
+        comment = CommentFactory(post=post)
+        other_user = UserFactory()
+        other_user_auth = {
+            'HTTP_AUTHORIZATION': 'Token {}'.format(other_user.auth_token.key)}
+        url = '/posts/{}/comments/{}/'.format(post.pk, comment.pk)
+        response = self.client.delete(url, **other_user_auth)
+        self.assertEqual(response.status_code, 401)
+        self.assertTrue(Comment.objects.filter(pk=comment.pk).exists())
+
+    def test_partial_update_comment(self):
+        post = PostFactory()
+        comment = CommentFactory(user=self.user, post=post)
+        url = '/posts/{}/comments/{}/'.format(post.pk, comment.pk)
+        data = {'comment': 'Hello, this is the new test description'}
+        response = self.client.patch(
+            url, data, content_type='application/json', **self.auth)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data['comment'] in str(response.data))
+        self.assertEqual(Comment.objects.get(
+            pk=comment.pk).comment, data['comment'])
 
 
 class UserTestCase(TestCase):

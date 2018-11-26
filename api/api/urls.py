@@ -24,6 +24,10 @@ from rest_framework.authtoken.views import obtain_auth_token
 router = routers.DefaultRouter()
 router.register(r'posts', views.PostViewSet)
 router.register(r'users', views.CreateUserViewSet)
+router.register(r'posts/(?P<post_id>\d+)/likes',
+                views.LikeViewSet, basename='likes')
+router.register(r'posts/(?P<post_id>\d+)/comments',
+                views.CommentViewset, basename='comments')
 
 
 urlpatterns = [
