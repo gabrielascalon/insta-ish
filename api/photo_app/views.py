@@ -38,17 +38,17 @@ class LikeViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, post_id=None):
-        queryset_post = Post.objects.get(pk=self.kwargs['post_id'])
-        if Like.objects.filter(user=self.request.user, post=queryset_post):
+        post = Post.objects.get(pk=self.kwargs['post_id'])
+        if Like.objects.filter(user=self.request.user, post=post):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
-            Like.objects.create(user=self.request.user, post=queryset_post)
+            Like.objects.create(user=self.request.user, post=post)
             return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk, post_id=None):
-        like_object = Like.objects.get(pk=pk)
-        if like_object.user == self.request.user:
-            like_object.delete()
+        like = Like.objects.get(pk=pk)
+        if like.user == self.request.user:
+            like.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -64,9 +64,9 @@ class CommentViewset(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, post_id=None):
-        queryset_post = Post.objects.get(pk=self.kwargs['post_id'])
+        post = Post.objects.get(pk=self.kwargs['post_id'])
         serializer_data = Comment.objects.create(
-            user=self.request.user, post=queryset_post)
+            user=self.request.user, post=post)
         serializer = CommentSerializer(serializer_data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

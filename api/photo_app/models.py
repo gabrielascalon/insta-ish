@@ -20,6 +20,9 @@ class Like(models.Model):
     post = models.ForeignKey('photo_app.Post', on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return '{} liked post {}'.format(user.username, post.id)
+
 
 class Comment(models.Model):
     user = models.ForeignKey('photo_app.CustomUser', on_delete=models.CASCADE)
@@ -28,7 +31,7 @@ class Comment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(self.id)
+        return '{} commented on post {}'.format(user.username, post.id)
 
 
 class CustomUser(AbstractUser):
