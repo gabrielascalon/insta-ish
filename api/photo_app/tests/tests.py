@@ -170,9 +170,9 @@ class CommentTestCase(TestCase):
     def test_comment_on_post(self):
         url = '/posts/{}/comments/'.format(self.post.pk)
         response = self.client.post(url, **self.auth)
+        self.assertEqual(response.status_code, 201)
         self.assertTrue(Comment.objects.filter(
             user=self.user, post=self.post).exists())
-        self.assertEqual(response.status_code, 201)
 
     def test_delete_comment(self):
         comment = CommentFactory(user=self.user, post=self.post)
