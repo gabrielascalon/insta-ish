@@ -32,13 +32,13 @@ class PostViewSet(viewsets.ModelViewSet):
 class LikeViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk, post_id=None):
         user = self.request.user
-        post = Post.objects.get(pk=self.kwargs['post_id'])
+        post = Post.objects.get(pk=post_id)
         serializer_data = Like.objects.get(pk=pk)
         serializer = LikeSerializer(serializer_data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, post_id=None):
-        post = Post.objects.get(pk=self.kwargs['post_id'])
+        post = Post.objects.get(pk=post_id)
         if Like.objects.filter(user=self.request.user, post=post):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -64,7 +64,7 @@ class CommentViewset(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, post_id=None):
-        post = Post.objects.get(pk=self.kwargs['post_id'])
+        post = Post.objects.get(pk=post_id)
         serializer_data = Comment.objects.create(
             user=self.request.user, post=post)
         serializer = CommentSerializer(serializer_data)
