@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework import mixins
-from .models import Post, CustomUser, Like, Comment
-from .serializers import PostSerializer, UserSerializer, LikeSerializer, CommentSerializer
+from .models import Post, CustomUser, Like, Comment, Follower
+from .serializers import PostSerializer, UserSerializer, LikeSerializer, CommentSerializer, FollowerSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework.response import Response
@@ -49,6 +49,32 @@ class LikeViewSet(viewsets.ViewSet):
         like = Like.objects.get(pk=pk)
         if like.user == self.request.user:
             like.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class FollowerViewSet(viewsets.ViewSet):
+    def retrieve(self, request, pk, followed_user_id=None):
+        following_user = self.request.user
+        followed_user = CustomUser.objects.get(pk=followed_user_id)
+        serializer_data = Follower.objects.get(pk=pk)
+        serializer = FollowerSerializer(serializer_data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request, followed_user_id=None):
+        followed_user = CustomUser.objects.get(pk=followed_user_id)
+        if Follower.objects.filter(following_user=self.request.user, followed_user=followed_user):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            Follower.objects.create(
+                following_user=self.request.user, followed_user=followed_user)
+            return Response(status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, pk, followed_user_id=None):
+        follow = Follower.objects.get(pk=pk)
+        if follow.following_user == self.request.user:
+            follow.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)

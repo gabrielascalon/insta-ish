@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, CustomUser, Like, Comment
+from .models import Post, CustomUser, Like, Comment, Follower
 from rest_framework.authtoken.models import Token
 
 
@@ -38,3 +38,10 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('user', 'date', 'comment')
+
+
+class FollowerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follower
+        fields = ('following_user', 'followed_user',
+                  'date')

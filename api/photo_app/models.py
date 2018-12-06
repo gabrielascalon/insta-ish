@@ -34,6 +34,17 @@ class Comment(models.Model):
         return '{} commented on post {}'.format(user.username, post.id)
 
 
+class Follower(models.Model):
+    following_user = models.ForeignKey('photo_app.CustomUser',
+                                       on_delete=models.CASCADE, related_name='following_user')
+    followed_user = models.ForeignKey(
+        'photo_app.CustomUser', on_delete=models.CASCADE, related_name='followed_user')
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return '{} started to follow {}'.format(user, followed_user)
+
+
 class CustomUser(AbstractUser):
 
     def save(self, *args, **kwargs):
