@@ -64,7 +64,7 @@ class FollowerViewSet(viewsets.ViewSet):
 
     def create(self, request, followed_user_id=None):
         followed_user = CustomUser.objects.get(pk=followed_user_id)
-        if Follower.objects.filter(following_user=self.request.user, followed_user=followed_user):
+        if Follower.objects.filter(following_user=self.request.user, followed_user=followed_user).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
             Follower.objects.create(

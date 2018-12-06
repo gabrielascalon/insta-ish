@@ -218,8 +218,8 @@ class FollowerTestCase(TestCase):
             followed_user=self.followed_user, following_user=self.following_user).exists())
 
     def test_follow_user_twice(self):
-        Follower.objects.create(
-            followed_user=self.followed_user, following_user=self.following_user)
+        FollowerFactory(followed_user=self.followed_user,
+                        following_user=self.following_user)
         url = '/users/{}/followers/'.format(self.followed_user.pk)
         response = self.client.post(url, **self.auth)
         self.assertTrue(Follower.objects.filter(

@@ -35,6 +35,9 @@ class Comment(models.Model):
 
 
 class Follower(models.Model):
+    class Meta:
+        unique_together = ("following_user", "followed_user")
+
     following_user = models.ForeignKey('photo_app.CustomUser',
                                        on_delete=models.CASCADE, related_name='following_user')
     followed_user = models.ForeignKey(
