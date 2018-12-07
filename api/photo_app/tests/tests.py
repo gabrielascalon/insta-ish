@@ -1,9 +1,9 @@
 from django.test import TestCase
 import json
 from django.core.files.base import ContentFile
-from .factories import PostFactory, UserFactory, CommentFactory, LikeFactory
+from .factories import PostFactory, UserFactory, CommentFactory, LikeFactory, FollowerFactory
 from django.urls import reverse
-from photo_app.models import Post, CustomUser, Like, Comment
+from photo_app.models import Post, CustomUser, Like, Comment, Follower
 from rest_framework.authtoken.models import Token
 
 
@@ -201,6 +201,51 @@ class CommentTestCase(TestCase):
         self.assertTrue(data['comment'] in str(response.data))
         self.assertEqual(Comment.objects.get(
             pk=comment.pk).comment, data['comment'])
+
+
+class FollowerTestCase(TestCase):
+    def setUp(self):
+        self.followed_user = UserFactory()
+        self.following_user = UserFactory()
+        self.auth = {'HTTP_AUTHORIZATION': 'Token {}'.format(
+            self.following_user.auth_token.key)}
+
+    def test_follow_user(self):
+        url = '/users/{}/followers/'.format(self.followed_user.pk)
+        response = self.client.post(url, **self.auth)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(Follower.objects.filter(
+            followed_user=self.followed_user, following_user=self.following_user).exists())
+
+    def test_follow_user_twice(self):
+        FollowerFactory(followed_user=self.followed_user,
+                        following_user=self.following_user)
+        url = '/users/{}/followers/'.format(self.followed_user.pk)
+        response = self.client.post(url, **self.auth)
+        self.assertTrue(Follower.objects.filter(
+            followed_user=self.followed_user, following_user=self.following_user).count() == 1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_delete_follow(self):
+        follow = FollowerFactory(
+            followed_user=self.followed_user, following_user=self.following_user)
+        url = '/users/{}/followers/{}/'.format(
+            self.followed_user.pk, follow.pk)
+        response = self.client.delete(url, **self.auth)
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Follower.objects.filter(pk=follow.pk).exists())
+
+    def test_delete_follow_other_user(self):
+        follow = FollowerFactory(
+            followed_user=self.followed_user, following_user=self.following_user)
+        other_user = UserFactory()
+        other_user_auth = {
+            'HTTP_AUTHORIZATION': 'Token {}'.format(other_user.auth_token.key)}
+        url = '/users/{}/followers/{}/'.format(
+            self.followed_user.pk, follow.pk)
+        response = self.client.delete(url, **other_user_auth)
+        self.assertEqual(response.status_code, 401)
+        self.assertTrue(Follower.objects.filter(pk=follow.pk).exists())
 
 
 class UserTestCase(TestCase):

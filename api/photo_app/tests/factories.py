@@ -1,5 +1,5 @@
 import factory
-from photo_app.models import Post, CustomUser, Like, Comment
+from photo_app.models import Post, CustomUser, Like, Comment, Follower
 from rest_framework.authtoken.models import Token
 
 
@@ -32,3 +32,10 @@ class CommentFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     post = factory.SubFactory(PostFactory)
     comment = 'Hello, this is a test comment'
+
+
+class FollowerFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Follower
+    followed_user = factory.SubFactory(UserFactory)
+    following_user = factory.SubFactory(UserFactory)

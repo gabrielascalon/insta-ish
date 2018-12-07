@@ -28,6 +28,8 @@ router.register(r'posts/(?P<post_id>\d+)/likes',
                 views.LikeViewSet, basename='likes')
 router.register(r'posts/(?P<post_id>\d+)/comments',
                 views.CommentViewset, basename='comments')
+router.register(r'users/(?P<followed_user_id>\d+)/followers',
+                views.FollowerViewSet, basename='followers')
 
 
 urlpatterns = [
