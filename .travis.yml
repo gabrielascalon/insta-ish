@@ -13,8 +13,9 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 
-install:
-  - pip install -r requirements.txt
-
 script:
   - docker-compose -f docker-compose_travis.yml up --exit-code-from photo_app
+
+
+after_success:
+  - cd api && coverage report
